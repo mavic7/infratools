@@ -1,6 +1,5 @@
 #!/bin/sh
 
-echo ";$nrconf{restart} = 'a';" >> /etc/needrestart/needrestart.conf
 apt -y full-upgrade
 apt -y install software-properties-common curl apt-transport-https ca-certificates gnupg
 LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
@@ -15,3 +14,5 @@ cd /var/www/pterodactyl
 curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
 tar -xzvf panel.tar.gz
 chmod -R 755 storage/* bootstrap/cache/
+apt -y install rsync mariadb-server mariadb-client
+ufw disable
