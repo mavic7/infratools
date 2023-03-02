@@ -14,5 +14,10 @@ cd /var/www/pterodactyl
 curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
 tar -xzvf panel.tar.gz
 chmod -R 755 storage/* bootstrap/cache/
-apt -y install rsync mariadb-server mariadb-client
+apt -y install mariadb-client
+apt-get install apt-transport-https curl
+curl -o /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc 'https://mariadb.org/mariadb_release_signing_key.asc'
+sh -c "echo 'deb https://mariadb.starbursthosting.co.uk/repo/10.11/ubuntu jammy main' >>/etc/apt/sources.list"
+sudo apt-get update
+sudo apt-get install mariadb-server
 ufw disable
