@@ -30,7 +30,7 @@ apt-add-repository --force-yes universe
 apt -y install php8.1 php8.1-{common,cli,gd,mysql,mbstring,bcmath,xml,fpm,curl,zip} nginx tar unzip git redis-server mariadb-server
 systemctl stop mariadb.service
 
-myql --user=root <<_EOF_
+mysql --user=root <<_EOF_
 UPDATE mysql.user SET Password=PASSWORD('$dbpwd') WHERE User='root';
 DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
@@ -54,7 +54,7 @@ GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'%' WITH GRANT OPTION;
 _EOF_
 cp .env.example .env 
 yes | composer install --no-dev --optimize-autoloader 
-php artisan key:generate force
+php artisan key:generate --force
 php artisan p:environment:setup
 php artisan p:environment:database
 php artisan p:environment:mail
