@@ -5,7 +5,7 @@ echo "Please enter this node's ip address:"
 read nodeaddr
 echo "Please enter cluster gcomm string:"
 read gcommaddr
-echo "Please enter node hostname:'
+echo "Please enter node hostname:"
 read hostname
 echo "Please enter galera clustername:"
 read galeraname
