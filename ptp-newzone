@@ -55,7 +55,15 @@ _EOF_
 cp .env.example .env 
 yes | composer install --no-dev --optimize-autoloader 
 php artisan key:generate force
-
-
-echo -e "Installation complete. Configuration is still necessary following the keygen command."
-
+php artisan p:environment:setup
+php artisan p:environment:database
+php artisan p:environment:mail
+php artisan migrate --seed --force
+php artisan p:user:make
+chown -R www-data:www-data /var/www/pterodactyl/*
+echo "* * * * * php /var/www/pterodactyl/artisan schedule:run >> /dev/null 2>&1" >> /etc/crontab
+echo -e "[Unit]\nDescription=Pterodactyl Queue Worker\nAfter=redis-server.service\n[Service]\nUser=www-data\nGroup=www-data\nRestart=always\nExecStart=/usr/bin/php /var/www/pterodactyl/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3\nStartLimitInterval=180\nStartLimitBurst=30\nRestartSec=5s\n\n[Install]\nWantedBy=multi-user.target" >> /etc/systemd/pteroq.service
+systemctl enable --now redis-server
+systemctl enable --now pteroq.service
+rm /etc/nginx/sites-enabled/default
+echo "PLEASE CONFIGURE NGINX MANUALLY: https://pterodactyl.io/panel/1.0/webserver_configuration.html"
