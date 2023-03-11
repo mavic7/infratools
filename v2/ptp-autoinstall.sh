@@ -1,7 +1,7 @@
 #! /bin/bash
 
 . unattend.conf
-mkdir -p /etc/letsencrypt/livee/$panelurl
+mkdir -p /etc/letsencrypt/live/$panelurl
 cp fullchain.pem /etc/letsencrypt/live/$panelurl/fullchain.pem
 cp privkey.pem /etc/letsencrypt/live/$panelurl/privkey.pem
 apt -y install software-properties-common curl apt-transport-https ca-certificates gnupg
@@ -19,6 +19,9 @@ DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.
 DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
+CREATE DATABASE panel;
+CREATE USER 'pterodactyl'@'%' IDENTIFIED BY '$dbpwd' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'%' WITH GRANT OPTION;
 _EOF_
 systemctl stop mariadb.service
 echo -e "[mysqld]\nbinlog_format=ROW\ndefault-storage-engine=innodb\ninnodb_autoinc_lock_mode=2\nbind_address=0.0.0.0\nwsrep_on=ON\nwsrep_provider = /usr/lib/galera/libgalera_smm.so\nwsrep_cluster_name=\"$gcname\"\nwsrep_cluster_address=\"$gcomm\"\nwsrep_sst_method=rsync\nwsrep_node_address=\"$ipaddr\"\nwsrep_node_name=\"$hostname\"\n" > /etc/mysql/conf.d/galera.cnf
@@ -29,11 +32,6 @@ curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/downl
 tar -xzvf panel.tar.gz
 chmod -R 755 storage/* bootstrap/cache/
 galera_new_cluster
-mysql --user=root --password="$dbpwd" <<_EOF_
-CREATE DATABASE panel;
-CREATE USER 'pterodactyl'@'%' IDENTIFIED BY '$dbpwd' WITH GRANT OPTION;
-GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'%' WITH GRANT OPTION;
-_EOF_
 cp .env.example .env 
 yes | composer install --no-dev --optimize-autoloader 
 php artisan key:generate --force
