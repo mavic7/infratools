@@ -1,7 +1,8 @@
 #! /bin/bash
 
 . unattend.conf
-
+cp fullchain.pem /etc/letsencrypt/live/$panelurl/fullchain.pem
+cp privkey.pem /etc/letsencrypt/live/$panelurl/privkey.pem
 apt -y install software-properties-common curl apt-transport-https ca-certificates gnupg
 LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
 curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
