@@ -20,7 +20,7 @@ DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
 _EOF_
 systemctl stop mariadb.service
-echo -e "[mysqld]\nbinlog_format=ROW\ndefault-storage-engine=innodb\ninnodb_autoinc_lock_mode=2\nbind_address=0.0.0.0\nwsrep_on=ON\nwsrep_provider = /var/lib/galera/libgalera_smm.so\nwsrep_cluster_name=\"$gcname\"\nwsrep_cluster_address=\"$gcomm\"\nwsrep_sst_method=rsync\nwsrep_node_address=\"$ipaddr\"\nwsrep_node_name=\"$hostname\"\n" > /etc/mysql/conf.d/galera.cnf
+echo -e "[mysqld]\nbinlog_format=ROW\ndefault-storage-engine=innodb\ninnodb_autoinc_lock_mode=2\nbind_address=0.0.0.0\nwsrep_on=ON\nwsrep_provider = /usr/lib/galera/libgalera_smm.so\nwsrep_cluster_name=\"$gcname\"\nwsrep_cluster_address=\"$gcomm\"\nwsrep_sst_method=rsync\nwsrep_node_address=\"$ipaddr\"\nwsrep_node_name=\"$hostname\"\n" > /etc/mysql/conf.d/galera.cnf
 curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
 mkdir -p /var/www/pterodactyl
 cd /var/www/pterodactyl
@@ -36,15 +36,15 @@ _EOF_
 cp .env.example .env 
 yes | composer install --no-dev --optimize-autoloader 
 php artisan key:generate --force
-php artisan p:environment:setup --author=$eggemail --url=$panelurl --timezone=$timezone --cache=$cache --session=$session --queue=$queue --redis-host=$redishost --redis-pass=null --redis-port=$redisport --settings-ui=$settingsui
+php artisan p:environment:setup --author=$eggemail --url=https://$panelurl --timezone=$timezone --cache=$cache --session=$session --queue=$queue --redis-host=$redishost --redis-pass=null --redis-port=$redisport --settings-ui=$settingsui --telemetry=
 php artisan p:environment:database --host=$ipaddr --port=3306 --database=$dbname --username=$dbuser --password=$dbpwd
 php artisan migrate --seed --force
 php artisan p:user:make --email=$email --username=$username --name-first=$firstname --name-last=$lastname --password=$password --admin=$admin
 chown -R www-data:www-data /var/www/pterodactyl/*
 echo "* * * * * php /var/www/pterodactyl/artisan schedule:run >> /dev/null 2>&1" >> /etc/crontab
-echo -e "[Unit]\nDescription=Pterodactyl Queue Worker\nAfter=redis-server.service\n[Service]\nUser=www-data\nGroup=www-data\nRestart=always\nExecStart=/usr/bin/php /var/www/pterodactyl/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3\nStartLimitInterval=180\nStartLimitBurst=30\nRestartSec=5s\n\n[Install]\nWantedBy=multi-user.target" >> /etc/systemd/pteroq.conf
+echo -e "[Unit]\nDescription=Pterodactyl Queue Worker\nAfter=redis-server.service\n[Service]\nUser=www-data\nGroup=www-data\nRestart=always\nExecStart=/usr/bin/php /var/www/pterodactyl/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3\nStartLimitInterval=180\nStartLimitBurst=30\nRestartSec=5s\n\n[Install]\nWantedBy=multi-user.target" >> /etc/systemd/system/pteroq.service
 systemctl enable --now redis-server
-systemctl enable --now pteroq.service
+systemctl enable --now pteroq
 rm /etc/nginx/sites-enabled/default
 
 
