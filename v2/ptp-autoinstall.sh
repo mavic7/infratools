@@ -1,6 +1,7 @@
 #! /bin/bash
 
 . unattend.conf
+mkdir -p /etc/letsencrypt/livee/$panelurl
 cp fullchain.pem /etc/letsencrypt/live/$panelurl/fullchain.pem
 cp privkey.pem /etc/letsencrypt/live/$panelurl/privkey.pem
 apt -y install software-properties-common curl apt-transport-https ca-certificates gnupg
